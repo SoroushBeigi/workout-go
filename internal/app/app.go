@@ -5,15 +5,19 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/SoroushBeigi/workout-go/internal/api"
 )
 
 type Application struct {
 	Logger *log.Logger
+	WorkoutHandler *api.WorkoutHandler
 }
 
 func NewApplication() (*Application, error) {
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
-	app := &Application{logger}
+	workoutHandler:= api.NewWorkoutHandler()
+	app := &Application{logger,workoutHandler}
 	return app, nil
 }
 
