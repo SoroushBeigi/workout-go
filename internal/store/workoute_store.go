@@ -23,7 +23,6 @@ type Exercise struct {
 	Notes           string   `json:"notes"`
 	OrderIndex      int      `json:"order_index"`
 }
-
 type WorkoutStore interface {
 	CreateWorkout(*Workout) (*Workout, error)
 	GetWorkoutByID(id int64) (*Workout, error)

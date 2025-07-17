@@ -63,3 +63,71 @@ func (wh *WorkoutHandler) HandleCreateWorkout(w http.ResponseWriter, r *http.Req
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(createdWorkout)
 }
+
+func (wh *WorkoutHandler) HandleUpdateWorkout(w http.ResponseWriter, r *http.Request) {
+	paramsWorkoutID := chi.URLParam(r, "id")
+	if paramsWorkoutID == "" {
+		http.NotFound(w, r)
+		return
+	}
+
+	workoutID, err := strconv.ParseInt(paramsWorkoutID, 10, 64)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	existingWorkout, err := wh.workoutStore.GetWorkoutByID(workoutID)
+	if err != nil {
+		http.Error(w, "failed to fetch workout", http.StatusInternalServerError)
+		return
+	}
+	if existingWorkout == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	var updateWorkoutRequest struct {
+		Title           *string          `json:"title"`
+		Description     *string          `json:"description"`
+		DurationMinutes *int             `json:"duration_minutes"`
+		CaloriesBurned  *int             `json:"calories_burned"`
+		Exercises       []store.Exercise `json:"exercises"`
+	}
+	err = json.NewDecoder(r.Body).Decode(&updateWorkoutRequest)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if updateWorkoutRequest.Title != nil {
+		existingWorkout.Title = *updateWorkoutRequest.Title
+	}
+
+	if updateWorkoutRequest.Description != nil {
+		existingWorkout.Description = *updateWorkoutRequest.Description
+	}
+
+	if updateWorkoutRequest.CaloriesBurned != nil {
+		existingWorkout.CaloriesBurned = *updateWorkoutRequest.CaloriesBurned
+	}
+
+	if updateWorkoutRequest.DurationMinutes != nil {
+		existingWorkout.DurationMinutes = *updateWorkoutRequest.DurationMinutes
+	}
+
+	if updateWorkoutRequest.Exercises != nil {
+		existingWorkout.Exercises = updateWorkoutRequest.Exercises
+	}
+
+	err = wh.workoutStore.UpdateWorkout(existingWorkout)
+	if err != nil {
+		fmt.Println("update workout error", err)
+		http.Error(w, "failed to update workout", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(existingWorkout)
+
+}
