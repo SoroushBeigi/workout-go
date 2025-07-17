@@ -96,8 +96,6 @@ func (pg PostgresWorkoutStore) GetWorkoutByID(id int64) (*Workout, error) {
 			&exercise.Reps,
 			&exercise.DurationSeconds,
 			&exercise.Weight,
-			&exercise.DurationSeconds,
-			&exercise.Weight,
 			&exercise.Notes,
 			&exercise.OrderIndex,
 		)

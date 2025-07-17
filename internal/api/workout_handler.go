@@ -42,7 +42,6 @@ func (wh *WorkoutHandler) HandleGetWorkoutByID(w http.ResponseWriter, r *http.Re
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(workout)
 
-	fmt.Fprintf(w, "this si workout id %d\n", workoutID)
 }
 
 func (wh *WorkoutHandler) HandleCreateWorkout(w http.ResponseWriter, r *http.Request) {
