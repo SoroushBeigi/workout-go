@@ -92,6 +92,6 @@ func (s *PostgresUserStore) UpdateUser(user *User) error {
 	if rowsAffected == 0 {
 		return sql.ErrNoRows
 	}
-	
+
 	return nil
 }
