@@ -3,18 +3,42 @@ package store
 import (
 	"database/sql"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
-type password struct {
-	plainText string
+type Password struct {
+	plainText *string
 	hash      []byte
+}
+
+func (p *Password) Set(plainTextPass string) error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(plainTextPass), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	p.plainText = &plainTextPass
+	p.hash = hash
+	return nil
+}
+func (p *Password) Matches(plainTextPass string) (bool, error) {
+	err := bcrypt.CompareHashAndPassword(p.hash, []byte(plainTextPass))
+	if err != nil {
+		switch err {
+		case bcrypt.ErrMismatchedHashAndPassword:
+			return false, nil
+		default:
+			return false, err
+		}
+	}
+	return true, nil
 }
 
 type User struct {
 	ID           int       `json:"id"`
 	Username     string    `json:"username"`
 	Email        string    `json:"email"`
-	PasswordHash password  `json:"-"`
+	PasswordHash Password  `json:"-"`
 	Bio          string    `json:"bio"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
@@ -47,7 +71,7 @@ func (s *PostgresUserStore) CreateUser(user *User) error {
 
 func (s *PostgresUserStore) GetUserByUsername(username string) (*User, error) {
 	user := &User{
-		PasswordHash: password{},
+		PasswordHash: Password{},
 	}
 	query := `
 	SELECT id, username, email, password_hash, bio, created_at, updated_at
